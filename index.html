@@ -252,6 +252,669 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/08/利用Wireshark分析HTTP、TCP、ICMP和ARP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Xie qijun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="http://i1.fuimg.com/696395/7c4e112392abc722.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="谢其骏的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/08/利用Wireshark分析HTTP、TCP、ICMP和ARP/" itemprop="url">利用Wireshark分析HTTP、TCP、ICMP和ARP</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-08T16:07:26+08:00">
+                2019-08-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  6.6k 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  34 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h1><p>HTTP超文本传输协议 (hypertext transport protocol),它允许将超文本标记语言(HTML)文档从web服务器传送到客户端的浏览器上。</p>
+<h2 id="研究HTTP协议的几个方面"><a href="#研究HTTP协议的几个方面" class="headerlink" title="研究HTTP协议的几个方面:"></a>研究HTTP协议的几个方面:</h2><ul>
+<li>基本的GET/response交互</li>
+<li>HTTP消息格式</li>
+<li>检索大型HTML文件</li>
+<li>检索带有嵌入式对象的HTML文件</li>
+<li>HTTP身份验证和安全性。</li>
+</ul>
+<h2 id="实验操作步骤及结果"><a href="#实验操作步骤及结果" class="headerlink" title="实验操作步骤及结果"></a>实验操作步骤及结果</h2><h3 id="1-The-Basic-HTTP-GET-response-interaction"><a href="#1-The-Basic-HTTP-GET-response-interaction" class="headerlink" title="1.The Basic HTTP GET/response interaction"></a>1.The Basic HTTP GET/response interaction</h3><h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li>Start up your web browser. </li>
+<li>Start up the Wireshark packet sniffer, as described in the Introductory lab (but don’t yet begin packet capture). Enter “http” (just the letters, not the quotation marks) in the display-filter-specification window, so that only captured HTTP messages will be displayed later in the packet-listing window. (We’re only interested in the HTTP protocol here, and don’t want to see the clutter of all captured packets).</li>
+<li>Wait a bit more than one minute (we’ll see why shortly), and then begin Wireshark packet capture.</li>
+<li>Enter the following to your browser <a href="http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file1.html" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file1.html</a> Your browser should display the very simple, one-line HTML file.</li>
+<li>Stop Wireshark packet capture. </li>
+</ol>
+<h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561704450615.png" alt="1561704450615"></p>
+<p><img src="/images/Wiresharkimages/1561704467626.png" alt="1561704467626"></p>
+<h4 id="问题回答"><a href="#问题回答" class="headerlink" title="问题回答"></a>问题回答</h4><ol>
+<li><p>Is your browser running HTTP version 1.0 or 1.1? What version of HTTP is the server running?</p>
+<p>我的浏览器运行HTTP1.1</p>
+<p><img src="/images/Wiresharkimages/1561704809328.png" alt="1561704809328"></p>
+<p>服务器运行HTTP1.1</p>
+<p><img src="/images/Wiresharkimages/1561704066754.png" alt="1561704066754"></p>
+</li>
+<li><p>What languages (if any) does your browser indicate that it can accept to the server? </p>
+<p><img src="/images/Wiresharkimages/1561702863797.png" alt="1561702863797"></p>
+<p>支持的语言有zh-CN（简体中文）</p>
+<p>可能产生的情况有Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;需要注意的是q的值代表优先顺序，用相对<a href="https://developer.mozilla.org/en-US/docs/Glossary/Quality_values" target="_blank" rel="noopener">质量价值</a>表示，又称为权重。</p>
+</li>
+<li><p>What is the IP address of your computer? Of the gaia.cs.umass.edu server?</p>
+<p>我的IP地址为10.27.238.252</p>
+<p>服务器的IP地址为128.119.245.12</p>
+<p><img src="/images/Wiresharkimages/1561704097146.png" alt="1561704097146"></p>
+</li>
+<li><p>What is the status code returned from the server to your browser?</p>
+<p>服务器返回的是200 OK</p>
+<p><img src="/images/Wiresharkimages/1561704129579.png" alt="1561704129579"></p>
+</li>
+<li><p>When was the HTML file that you are retrieving last modified at the server? </p>
+<p><img src="/images/Wiresharkimages/1561704142483.png" alt="1561704142483"></p>
+<p>最后修改时间是2019年6月27日 星期四 05：59：01</p>
+<p>经过查阅相关资料进一步了解得浏览器第一次请求一个URL时，服务器端返回状态是200，同时last-modified属性标记此文件在服务器端最后被修改的时间。客户端第二次请求此URL时，根据HTTP协议的规定，浏览器向服务器请求if-modified-since报头，询问该时间之后是否有被修改过，若没被修改过的话，返回HTTP 304(NOT Changed)状态码，从而达到节省资源的作用。</p>
+</li>
+<li><p>How many bytes of content are being returned to your browser? </p>
+<p><img src="/images/Wiresharkimages/1561704158326.png" alt="1561704158326"></p>
+<p>content length：128</p>
+</li>
+<li><p>By inspecting the raw data in the packet content window, do you see any headers within the data that are not<br>displayed in the packet-listing window? If so, name one. </p>
+<p><img src="/images/Wiresharkimages/1561704169486.png" alt="1561704169486"></p>
+<p>没有，仅有以上的两个http。</p>
+</li>
+</ol>
+<h3 id="2-The-HTTP-CONDITIONAL-GET-response-interaction"><a href="#2-The-HTTP-CONDITIONAL-GET-response-interaction" class="headerlink" title="2.The HTTP CONDITIONAL GET/response interaction"></a>2.The HTTP CONDITIONAL GET/response interaction</h3><h4 id="步骤-1"><a href="#步骤-1" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li>Start up your web browser, and make sure your browser’s cache is cleared, as discussed above.</li>
+<li>Start up the Wireshark packet sniffer</li>
+<li>Enter the following URL into your browser <a href="http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file2.html" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file2.html</a> Your browser should display a very simple five-line HTML file.</li>
+<li>Quickly enter the same URL into your browser again (or simply select the refresh button on your browser)</li>
+<li>Stop Wireshark packet capture, and enter “http” in the display-filter-specification window, so that only captured HTTP messages will be displayed later in the packet-listing window. </li>
+<li>(<em>Note:</em> If you are unable to run Wireshark on a live network connection, you can use the http-ethereal-trace-2 packet trace to answer the questions below; see footnote 1. This trace file was gathered while performing the steps above on one of the author’s computers.) </li>
+</ol>
+<h4 id="实验结果-1"><a href="#实验结果-1" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561703231603.png" alt="1561703231603"></p>
+<p><img src="/images/Wiresharkimages/1561703235038.png" alt="1561703235038"></p>
+<h4 id="问题回答-1"><a href="#问题回答-1" class="headerlink" title="问题回答"></a>问题回答</h4><ol start="8">
+<li><p>Inspect the contents of the first HTTP GET request from your browser to the server.  Do you see an “IF-MODIFIED-SINCE” line in the HTTP GET? </p>
+<p><img src="/images/Wiresharkimages/1561704189346.png" alt="1561704189346"></p>
+<p>未找到，如第5点中所说的，IF-MODIFIED-SINCE是用于第一次之后再返回时来检查是否有新的更新的。</p>
+</li>
+<li><p>Inspect the contents of the server response. Did the server explicitly return the contents of the file?   How can you tell?</p>
+<p><img src="/images/Wiresharkimages/1561703292032.png" alt="1561703292032"></p>
+<p>在Line-based中以html格式返回网页中内容</p>
+</li>
+<li><p>Now inspect the contents of the second HTTP GET request from your browser to the server.  Do you see an “IF-MODIFIED-SINCE:” line in the HTTP GET? If so, what information follows the “IF-MODIFIED-SINCE:” header? </p>
+<p>当第二次打开网页时，浏览器会根据上次打开这个网页中的last-modified以if-modified-since的内容发送，来检查是否在这个时间之后有没有更新，如果没有更新的话，则调用本地cache缓存。</p>
+<p><img src="/images/Wiresharkimages/1561703336720.png" alt="1561703336720"></p>
+</li>
+<li><p>What is the HTTP status code and phrase returned from the server in response to this second HTTP GET?  Did the server explicitly return the contents of the file? Explain. </p>
+<p><img src="/images/Wiresharkimages/1561703351970.png" alt="1561703351970"></p>
+<p>返回304，not modified，表示在last-modified-since服务器没有修改内容，即调用本地缓存即可，当然服务器也不再显式返回文件中的内容（server don’t explicitly return the contents of the file）</p>
+<p><img src="/images/Wiresharkimages/1561704241031.png" alt="1561704241031"></p>
+<p>没有Line-based text/html这一项了</p>
+</li>
+</ol>
+<h3 id="3-Retrieving-Long-Documents"><a href="#3-Retrieving-Long-Documents" class="headerlink" title="3.Retrieving Long Documents"></a>3.Retrieving Long Documents</h3><h4 id="步骤-2"><a href="#步骤-2" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li>Start up your web browser, and make sure your browser’s cache is cleared, as discussed above.</li>
+<li>Start up the Wireshark packet sniffer  </li>
+<li>Enter the following URL into your browser <a href="http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file3.html" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file3.html</a></li>
+<li>Stop Wireshark packet capture, and enter “http” in the display-filter-specification window, so that only captured HTTP messages will be displayed.</li>
+</ol>
+<h4 id="实验结果-2"><a href="#实验结果-2" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561703475269.png" alt="1561703475269"></p>
+<p><img src="/images/Wiresharkimages/1561703478876.png" alt="1561703478876"></p>
+<h4 id="实验回答"><a href="#实验回答" class="headerlink" title="实验回答"></a>实验回答</h4><ol start="12">
+<li><p>How many HTTP GET request messages did your browser send? Which packet number in the trace contains the GET message for the Bill or Rights?</p>
+<p>仅发送了一个GET</p>
+<p><img src="/images/Wiresharkimages/1561704279745.png" alt="1561704279745"></p>
+<p><img src="/images/Wiresharkimages/1561704294783.png" alt="1561704294783"></p>
+<p>第225个中有“THE BILL OF RIGHTS”</p>
+</li>
+<li><p>Which packet number in the trace contains the status code and phrase associated with the response to the HTTP GET request? </p>
+<p>同样是225返回了状态码200 OK</p>
+<p><img src="/images/Wiresharkimages/1561703557824.png" alt="1561703557824"></p>
+</li>
+<li><p>What is the statu code and phrase in the response? </p>
+<p>同上一题，200 OK</p>
+</li>
+<li><p>How many data-containing TCP segments were needed to carry the single HTTP response and the text of the Bill<br>of Rights? </p>
+<p><img src="/images/Wiresharkimages/1561703593804.png" alt="1561703593804"></p>
+<p>有4个TCP协议承载单个HTTP响应的权利法案的文本</p>
+<p>HTML文本相当长，一个TCP数据包不能容纳，因此单个HTTP响应消息由TCP分成几个部分，每个部分包含在单独的TCP报文段中。</p>
+</li>
+</ol>
+<h3 id="4-HTML-Documents-with-Embedded-Objects"><a href="#4-HTML-Documents-with-Embedded-Objects" class="headerlink" title="4.HTML Documents with Embedded Objects"></a>4.HTML Documents with Embedded Objects</h3><h4 id="步骤-3"><a href="#步骤-3" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li>Start up your web browser, and make sure your browser’s cache is cleared, as discussed above. </li>
+<li>Start up the Wireshark packet sniffer </li>
+<li>Enter the following URL into your browser <a href="http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file4.html" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-file4.html</a> </li>
+<li>Your browser should display a short HTML file with two images. These two images are referenced in the base HTML file.  That is, the images themselves are not contained in the HTML; instead the URLs for the images are contained in the downloaded HTML file. As discussed in the textbook, your browser will have to retrieve these logos from the indicated web sites.  Our publisher’s logo is retrieved from the <a href="http://www.aw-bc.com" target="_blank" rel="noopener">www.aw-bc.com</a> web site.  The image of the cover for our 5th edition (one of our favorite covers) is stored at the manic.cs.umass.edu server. </li>
+<li>Stop Wireshark packet capture, and enter “http” in the display-filter-specification window, so that only captured HTTP messages will be displayed. </li>
+</ol>
+<h4 id="实验结果-3"><a href="#实验结果-3" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561703681350.png" alt="1561703681350"></p>
+<p><img src="/images/Wiresharkimages/1561704334252.png" alt="1561704334252"></p>
+<h4 id="问题回答-2"><a href="#问题回答-2" class="headerlink" title="问题回答"></a>问题回答</h4><ol start="16">
+<li><p>How many HTTP GET request messages did your browser send?  To which Internet addresses were these GET<br>requests sent? </p>
+<p>发送了三个GET，都发送到了一个IP：128.119.245.12</p>
+<p><img src="/images/Wiresharkimages/1561704354164.png" alt="1561704354164"></p>
+</li>
+<li><p>Can you tell whether your browser downloaded the two images serially, or whether they were downloaded from the two web sites in parallel?  Explain. </p>
+<p>不是同时给下载的，这些包都是先后发出的，有时间差。</p>
+<p><img src="/images/Wiresharkimages/1561704391108.png" alt="1561704391108"></p>
+<p>需要注意的是：第二张图片出现了TCP Oou-of-order，查阅资料可得，同一台主机的数据包应该是连续的，当wireshark发现后一个包的Seq号小于前一个包的Seq Len时，就会认为是乱序了，因此提示 [TCP Out-of-Order]。产生的原因有很多，但是多半是网络拥塞，导致顺序包抵达时间不同，延时太长，或者包丢失，需要重新组合数据单元 因为他们可能是通过不同的路径到达你电脑上面的。</p>
+<p>清理浏览器缓存后再次实验，未出现TCP Oou-of-order</p>
+<p><img src="/images/Wiresharkimages/1561703742193.png" alt="1561703742193"></p>
+</li>
+</ol>
+<h1 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h1><h2 id="研究TCP的几个方面："><a href="#研究TCP的几个方面：" class="headerlink" title="研究TCP的几个方面："></a>研究TCP的几个方面：</h2><ul>
+<li>Capturing a bulk TCP transfer from your computer to a remote server</li>
+<li>A first look at the captured trace </li>
+<li>TCP Basics</li>
+<li>TCP congestion control in action</li>
+</ul>
+<h2 id="实验步骤及结果"><a href="#实验步骤及结果" class="headerlink" title="实验步骤及结果"></a>实验步骤及结果</h2><h3 id="1-Capturing-a-bulk-TCP-transfer-from-your-computer-to-a-remote-server"><a href="#1-Capturing-a-bulk-TCP-transfer-from-your-computer-to-a-remote-server" class="headerlink" title="1. Capturing a bulk TCP transfer from your computer to a remote server"></a>1. Capturing a bulk TCP transfer from your computer to a remote server</h3><h4 id="步骤-4"><a href="#步骤-4" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>Start up your web browser. Go the <a href="http://gaia.cs.umass.edu/wireshark-labs/alice.txt" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/alice.txt</a> and retrieve an ASCII copy of <em>Alice in Wonderland.</em> Store this file somewhere on your computer.</li>
+<li>Next go to <a href="http://gaia.cs.umass.edu/wireshark-labs/TCP-wireshark-file1.html" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/TCP-wireshark-file1.html</a>.You should see a screen that looks like:<br>Use the <em>Browse</em> button in this form to enter the  name of the file (full path name) on your computer containing <em>Alice in Wonderland</em> (or do so manually). Don’t yet press the “<em>Upload  alice.txt file</em>” button. </li>
+<li>Now start up Wireshark and begin packet capture <em>(Capture-&gt;Start)</em> and then press <em>OK</em> on  the Wireshark Packet Capture Options screen (we’ll not need to select any options here). </li>
+<li>Returning to your browser, press the “<em>Upload  alice.txt file</em>”  button to upload the file to the gaia.cs.umass.edu server.  Once the file has been uploaded, a short congratulations message will be displayed in your browser window. </li>
+<li>Stop Wireshark packet capture. Your Wireshark window should look similar to the window shown below. </li>
+</ul>
+<h4 id="实验结果-4"><a href="#实验结果-4" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561737655741.png" alt="1561737655741"></p>
+<p><img src="/images/Wiresharkimages/1561737762879.png" alt="1561737762879"></p>
+<h3 id="2-A-first-look-at-the-captured-trace"><a href="#2-A-first-look-at-the-captured-trace" class="headerlink" title="2. A first look at the captured trace"></a>2. A first look at the captured trace</h3><h4 id="步骤-5"><a href="#步骤-5" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>First, filter the packets displayed in the Wireshark window by entering “tcp” (lowercase, no quotes, and don’t forget to press return after entering!) into the display filter specification window towards the top of the Wireshark window. </li>
+</ul>
+<h4 id="实验结果-5"><a href="#实验结果-5" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561738661758.png" alt="1561738661758"></p>
+<h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><ol>
+<li><p>What is the IP address and TCP port number used by the client computer (source) that is transferring the file to gaia.cs.umass.edu?  To answer this question, it’s probably easiest to select an HTTP message and explore the details of the TCP packet used to carry this HTTP message, using the “details of the selected packet header window” (refer to Figure 2 in the “Getting Started with Wireshark” Lab if you’re uncertain about the Wireshark windows. </p>
+<p><img src="/images/Wiresharkimages/1561738881024.png" alt="1561738881024"></p>
+<p>通过找到post内容，可以发现客户端计算机的IP为192.168.1.102，端口为1161</p>
+</li>
+<li><p>What is the IP address of gaia.cs.umass.edu? On what port number is it sending and receiving TCP segments for this connection? </p>
+<p>同上题，可知gaia.cs.umass.edu的IP为128.119.245.12，端口为80</p>
+</li>
+<li><p>What is the IP address and TCP port number used by your client computer (source) to transfer the file to gaia.cs.umass.edu? </p>
+<p><img src="/images/Wiresharkimages/1561739373741.png" alt="1561739373741"></p>
+<p> 自己的IP是192.168.43.216，端口为7687</p>
+</li>
+</ol>
+<h3 id="3-TCP-Basics"><a href="#3-TCP-Basics" class="headerlink" title="3. TCP Basics"></a>3. TCP Basics</h3><h4 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h4><ol start="4">
+<li><p>What is the sequence number of the TCP SYN segment that is used to initiate the TCP connection between the client computer and gaia.cs.umass.edu?  What is it in the segment that identifies the segment as a SYN segment?  </p>
+<p>首先先学习三次握手的过程：</p>
+<p>第一次握手：建立连接时，客户端发送syn包（syn=j）到<a href="https://baike.baidu.com/item/服务器" target="_blank" rel="noopener">服务器</a>，并进入SYN_SENT状态，等待服务器确认；SYN：同步序列编号（<strong><em>Synchronize Sequence Numbers</em></strong>）。</p>
+<p>第二次握手：服务器收到syn包，必须确认客户的SYN（ack=j+1），同时自己也发送一个SYN包（seq=k），即SYN+ACK包，此时服务器进入SYN_RECV状态</p>
+<p>第三次握手：客户端收到服务器的SYN+ACK包，向服务器发送确认包ACK(ack=k+1），此包发送完毕，客户端和服务器进入ESTABLISHED（TCP连接成功）状态，完成三次握手。</p>
+<p><img src="/images/Wiresharkimages/1561740718856.png" alt="1561740718856"></p>
+<p>SYN的序号为0</p>
+<p><img src="/images/Wiresharkimages/1561777735480.png" alt="1561777735480"></p>
+<p>把其中Flag中的Syn置为1</p>
+</li>
+<li><p>What is the sequence number of the SYNACK segment sent by gaia.cs.umass.edu to the client computer in reply to the SYN?  What is the value of the Acknowledgement field in the SYNACK segment?  How did gaia.cs.umass.edu determine that value? What is it in the segment that identifies the segment as a SYNACK segment? </p>
+<p><img src="/images/Wiresharkimages/1561740927486.png" alt="1561740927486"></p>
+<p>SYN的序号为0，Ack=1，ack是根据上一次客户端发送的Seq+1所得到的</p>
+<p><img src="/images/Wiresharkimages/1561777796885.png" alt="1561777796885"></p>
+<p>将Syn和Acknowledgement置为1</p>
+</li>
+<li><p>What is the sequence number of the TCP segment containing the HTTP POST command?  Note that in order to find the POST command, you’ll need to dig into the packet content field at the bottom of the Wireshark window, looking for a segment with a “POST” within its DATA field. </p>
+<p><img src="/images/Wiresharkimages/1561741703644.png" alt="1561741703644"></p>
+<p>seq = 1</p>
+</li>
+<li><p>Consider the TCP segment containing the HTTP POST as the first segment in the TCP connection. What are the sequence numbers of the first six segments in the TCP connection (including the segment containing the HTTP POST)? At what time was each segment sent? When was the ACK for each segment received? Given the difference between when each TCP segment was sent, and when its acknowledgement was received, what is the RTT value for each of the six segments? What is the EstimatedRTT value (see Section 3.5.3, page 239 in text) after the receipt of each ACK? Assume that the value of the EstimatedRTT is equal to the measured RTT for the first segment, and then is computed using the EstimatedRTT equation on page 239 for all subsequent segments.</p>
+<p><img src="/images/Wiresharkimages/1561772051795.png" alt="1561772051795"></p>
+<p><img src="/images/Wiresharkimages/1561772011456.png" alt="1561772011456"></p>
+<center>Segment 1</center>
+
+<p><img src="/images/Wiresharkimages/1561772102887.png" alt="1561772102887"></p>
+<center>Segment 2</center>
+
+<p><img src="/images/Wiresharkimages/1561772145598.png" alt="1561772145598"></p>
+<center>Segment 3</center>
+
+<p><img src="/images/Wiresharkimages/1561772175190.png" alt="1561772175190"></p>
+<center>Segment 4</center>
+
+<p><img src="/images/Wiresharkimages/1561772200004.png" alt="1561772200004"></p>
+<center>Segment 5</center>
+
+<p><img src="/images/Wiresharkimages/1561772225956.png" alt="1561772225956"></p>
+<center>Segment 6</center>
+
+<p><img src="/images/Wiresharkimages/1561772295816.png" alt="1561772295816"></p>
+<p><img src="/images/Wiresharkimages/1561772383220.png" alt="1561772383220"></p>
+<p><img src="/images/Wiresharkimages/1561772353308.png" alt="1561772353308"></p>
+<p><img src="/images/Wiresharkimages/1561772443816.png" alt="1561772443816"></p>
+<p>![1561773435301].\sources\1561773435301.png)</p>
+<p><img src="/images/Wiresharkimages/1561775625813.png" alt="1561775625813"></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Sqe</th>
+<th>Sent time</th>
+<th>Ack time</th>
+<th>RTT</th>
+<th>EstimatedRTT</th>
+<th>Length/bytes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Segment 1</td>
+<td>1</td>
+<td>0.026477</td>
+<td>0.053937</td>
+<td>0.02746</td>
+<td>0.02746</td>
+<td>565</td>
+</tr>
+<tr>
+<td>Segment 2</td>
+<td>566</td>
+<td>0.041737</td>
+<td>0.077294</td>
+<td>0.035557</td>
+<td>0.028472</td>
+<td>1460</td>
+</tr>
+<tr>
+<td>Segment 3</td>
+<td>2026</td>
+<td>0.054026</td>
+<td>0.124086</td>
+<td>0.070059</td>
+<td>0.033670</td>
+<td>1460</td>
+</tr>
+<tr>
+<td>Segment 4</td>
+<td>3486</td>
+<td>0.054690</td>
+<td>0.169118</td>
+<td>0.11443</td>
+<td>0.043765</td>
+<td>1460</td>
+</tr>
+<tr>
+<td>Segment 5</td>
+<td>4946</td>
+<td>0.077405</td>
+<td>0.217299</td>
+<td>0.13989</td>
+<td>0.055781</td>
+<td>1460</td>
+</tr>
+<tr>
+<td>Segment 6</td>
+<td>6406</td>
+<td>0.078157</td>
+<td>0.267802</td>
+<td>0.18964</td>
+<td>0.072513</td>
+<td>1460</td>
+</tr>
+</tbody></table>
+<center>EstimatedRTT = 0.875 * Last EstimatedRTT + 0.125 * sample RTT</center>
+
+<p>EstimatedRTT定义是计算机网络中TCP协议对下一个数据往返值进行的估计，并利用此估计值来判断数据超时时间。即维护一个SampleRTT的均值，一旦获得新的SampleRTT，会更新EstimatedRTT，除此之外，还要测量RTT的变化，定义DevRTT,用于估算SampleRTT 偏离EstimatedRTT的程度：DevRTT=(1-b) * DevRTT+b * |SampleRTT-EstimatedRTT|，b的值一般为0.25。当我们得到EstimatedRTT和DevRTT，即可设置TCP超时间隔：TimeoutInterval (RTO) = EstimatedRTT+4*DevRTT</p>
+</li>
+<li><p>What is the length of each of the first six TCP segments?</p>
+<p>见第七题表格。</p>
+</li>
+<li><p>What is the minimum amount of available buffer space advertised at the received for the entire trace?  Does the lack of receiver buffer space ever throttle the sender? </p>
+<p>对于整个跟踪包，最小的窗口是5480</p>
+<p><img src="/images/Wiresharkimages/1561775072176.png" alt="1561775072176"></p>
+<p>TCP Window Size ，双方的可用的缓冲区大小，若一方通知 window=0 ，另一端将不再发送数据，但会定时询问是否缓冲区是否可用，若不可用，则重置时间继续等待，若可用再发送。一般是 2 Byte=65535Bit </p>
+</li>
+<li><p>Are there any retransmitted segments in the trace file? What did you check for (in the trace) in order to answer this question? </p>
+<p><img src="/images/Wiresharkimages/1561776551201.png" alt="1561776551201"></p>
+<p>没有发现重传的情况，因为序列号一直在增大，通过检查TCP Segments中的sequence number</p>
+</li>
+</ol>
+<ol start="11">
+<li><p>How much data does the receiver typically acknowledge in an ACK?  Can you identify cases where the receiver<br>is ACKing every other received segment (see Table 3.2 on page 247 in the text). </p>
+<p>通过第七题可知，在两个ACK之间传送1460bytes，每隔一个接收到的区段之间的数据相隔1460*2=2920的bytes</p>
+</li>
+<li><p>What is the throughput (bytes transferred per unit time) for the TCP connection? Explain how you calculated this value. </p>
+<p>发送整个过程是从4到202</p>
+<p>总数据量为 164091 - 1 = 164090bytes</p>
+<p>总时间为 5.455830 - 0.026477 = 5.4294sec</p>
+<p>164090bytes / 5.4294sec = 30.222 KBytes/sec</p>
+<p><img src="/images/Wiresharkimages/1561777479024.png" alt="1561777479024"></p>
+</li>
+</ol>
+<h3 id="4-TCP-congestion-control-in-action"><a href="#4-TCP-congestion-control-in-action" class="headerlink" title="4.TCP congestion control in action"></a>4.TCP congestion control in action</h3><h4 id="步骤-6"><a href="#步骤-6" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>Select a TCP segment in the Wireshark’s “listing of captured-packets” window. Then select the menu : <em>Statistics-&gt;TCP Stream Graph-&gt; Time-Sequence-Graph(Stevens</em>). You should see a plot that looks similar to the following<br>plot, which was created from the captured packets in the packet trace <em>tcp-ethereal-trace-1</em> in <a href="http://gaia.cs.umass.edu/wireshark-labs/wireshark-traces.zip" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/wireshark-traces.zip</a> (see earlier footnote ): </li>
+</ul>
+<h4 id="问题-2"><a href="#问题-2" class="headerlink" title="问题"></a>问题</h4><ol start="13">
+<li><p>Use the <em>Time-Sequence-Graph(Stevens</em>) plotting tool to view the sequence number versus time plot of segments being sent from the client to the gaia.cs.umass.edu server.  Can you identify where TCP’s slowstart phase begins and ends, and where congestion avoidance takes over?  Comment on ways in which the measured data differs from the idealized behavior of TCP that we’ve studied in the text. </p>
+<p><img src="/images/Wiresharkimages/1561776551201.png" alt="1561776551201"></p>
+<p>我们可以看出慢启动在刚开始的地方，但是从这个图里看不出慢启动结束和拥塞避免的地方。</p>
+</li>
+<li><p>Answer each of two questions above for the trace that you have gathered when you transferred a file from your computer to gaia.cs.umass.edu </p>
+<p><img src="/images/Wiresharkimages/1561779055603.png" alt="1561779055603"></p>
+<p>同上一题结果，慢启动在刚开始的时候出现。</p>
+</li>
+</ol>
+<h1 id="ICMP"><a href="#ICMP" class="headerlink" title="ICMP"></a>ICMP</h1><h2 id="研究ICMP相关内容"><a href="#研究ICMP相关内容" class="headerlink" title="研究ICMP相关内容"></a>研究ICMP相关内容</h2><ul>
+<li>ICMP messages generating by the Ping program; </li>
+<li>ICMP messages generated by the Traceroute program; </li>
+<li>the format and contents of an ICMP message. </li>
+</ul>
+<h2 id="实验步骤及结果-1"><a href="#实验步骤及结果-1" class="headerlink" title="实验步骤及结果"></a>实验步骤及结果</h2><h3 id="ICMP-and-Ping"><a href="#ICMP-and-Ping" class="headerlink" title="ICMP and Ping"></a>ICMP and Ping</h3><h4 id="步骤-7"><a href="#步骤-7" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>Let’s begin this adventure by opening the Windows Command Prompt application (which<br>can be found in your Accessories folder). </li>
+<li>Start up the Wireshark packet sniffer, and begin Wireshark packet capture. </li>
+<li>The <em>ping</em> command is in c:\windows\system32, so type either “<em>ping –n 10 hostname</em>” or “<em>c:\windows\system32\ping –n 10 hostname</em>” in the MS-DOS command line (without quotation marks), where hostname is a host on another continent. If you’re outside of Asia, you may want to enter <a href="http://www.ust.hk" target="_blank" rel="noopener">www.ust.hk</a> for the Web server at Hong Kong University of Science and Technology. The argument <em>“-n 10</em>” indicates that 10 ping messages should be sent. Then run the Ping program by typing return. </li>
+<li>When the Ping program terminates, stop the packet capture in Wireshark. </li>
+</ul>
+<h4 id="实验结果-6"><a href="#实验结果-6" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561780722374.png" alt="1561780722374"></p>
+<p>请求超时</p>
+<p>访问必应网站</p>
+<p><img src="/images/Wiresharkimages/1561780770368.png" alt="1561780770368"></p>
+<p><img src="/images/Wiresharkimages/1561788530782.png" alt="1561788530782"></p>
+<h4 id="问题回答-3"><a href="#问题回答-3" class="headerlink" title="问题回答"></a>问题回答</h4><ol>
+<li><p>What is the IP address of your host? What is the IP address of the destination host?</p>
+<p><img src="/images/Wiresharkimages/1561788676125.png" alt="1561788676125"></p>
+<p>我的IP 为10.70.169.225<br>服务器的IP为202.89.233.101</p>
+</li>
+<li><p>Why is it that an ICMP packet does not have source and destination port numbers? </p>
+<p>ICMP的学习：ICMP（Internet Control Message Protocol）Internet控制报文协议。它是TCP/IP协议簇的一个子协议，用于在IP主机、路由器之间传递控制消息。控制消息是指网络通不通、主机是否可达、路由是否可用等网络本身的消息。这些控制消息虽然并不传输用户数据，但是对于用户数据的传递起着重要的作用。</p>
+<p>ICMP是网络层的协议，不需要TCP和UDP承载，直接使用IP报承载，因此不需要源端口号和目的端口号，只需要目的地址即可。</p>
+</li>
+<li><p>Examine one of the ping request packets sent by your host. What are the ICMP type and code numbers? What other fields does this ICMP packet have? How many bytes are the checksum, sequence number and identifier<br>fields?</p>
+<p><img src="/images/Wiresharkimages/1561789200770.png" alt="1561789200770"></p>
+<p>Type 是8，Code是0</p>
+<p>还有校验码（checksum），ID，序号（sequence）</p>
+<p><img src="/images/Wiresharkimages/1561789385900.png" alt="1561789385900"></p>
+<p>都是16位，2个字节。</p>
+<p>需要注意是：发现有BE和LE的不同情况，查询wireshark官网中<em>After I discovered that the Windows ping sends ICMP echo request packets with the sequence number in little-endian byte order, but the Linux ping sends it in proper big-endian format, a discussion about it took place on the mailing list as to how to handle it (refer to</em>  <a href="http://www.wireshark.org/lists/wireshark-dev/200909/msg00216.html" target="_blank" rel="noopener"><em>http://www.wireshark.org/lists/wireshark-dev/200909/msg00216.html</em></a><em>).  However,to keep things simple and avoid adding any new ICMP preferences and/or trying to guess at the byte order, I thought why not just display the sequence number in both formats, so that’s what this patch does.”</em></p>
+<p>目的是考虑到Windows和Linux系统发出的ping报文的字节顺序不一样，（windows为LE：little-endian byte order，Linux为BE：big-endian）。</p>
+<p>查询维基百科中ICMP报文结构可得</p>
+<p><img src="/images/Wiresharkimages/1561789585510.png" alt="1561789585510"></p>
+</li>
+<li><p>Examine the corresponding ping reply packet. What are the ICMP type and code numbers?<br>What other fields does this ICMP packet have? How many bytes are the<br>checksum, sequence number and identifier fields? </p>
+<p><img src="/images/Wiresharkimages/1561789692722.png" alt="1561789692722"></p>
+<p>Type是0，Code是0，其中Checksum，ID，Seq都是16位，2个字节</p>
+<p>学习常用的ICMP报文类型<br>CMP提供多种类型的消息为源端节点提供网络层的故障信息反馈，它的报文类型可以归纳为以下5个大类： 诊断报文（类型8，代码0；类型0，代码0）； 目的不可达报文（类型3，代码0-15）； 重定向报文（类型5，代码0-4）； 超时报文（类型11，代码0-1）； 信息报文（类型12-18）。</p>
+</li>
+</ol>
+<h3 id="ICMP-and-Traceroute"><a href="#ICMP-and-Traceroute" class="headerlink" title="ICMP and Traceroute"></a>ICMP and Traceroute</h3><h4 id="步骤-8"><a href="#步骤-8" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>Let’s begin by opening the Windows Command Prompt application (which can be found in your Accessories folder).</li>
+<li>Start up the Wireshark packet sniffer, and begin Wireshark packet capture. </li>
+<li>The <em>tracert</em> command is in c:\windows\system32, so type either “<em>tracert hostname</em>” or “<em>c:\windows\system32\tracert<br>hostname</em>” in the MS-DOS command line (without quotation marks), where hostname is a host on another continent. (Note that on a Windows machine, the command is “<em>tracert</em>” and not “<em>traceroute</em>”.) If you’re outside of Europe,   you may want to enter <a href="http://www.inria.fr" target="_blank" rel="noopener">www.inria.fr</a> for the Web server at INRIA, a computer science research institute in France. Then run the Traceroute program by typing return. </li>
+<li>When the Traceroute program terminates, stop packet capture in Wireshark. When the Traceroute program terminates, stop packet capture in Wireshark. </li>
+</ul>
+<h4 id="实验结果-7"><a href="#实验结果-7" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561793821831.png" alt="1561793821831"></p>
+<p><img src="/images/Wiresharkimages/1561794021412.png" alt="1561794021412"></p>
+<h4 id="问题回答-4"><a href="#问题回答-4" class="headerlink" title="问题回答"></a>问题回答</h4><ol start="5">
+<li><p>What is the IP address of your host? What is the IP address of the target destination host?</p>
+<p><img src="/images/Wiresharkimages/1561794060808.png" alt="1561794060808"></p>
+<p>我的IP地址为10.70.169.225</p>
+<p>服务器的IP地址为128.93.162.84</p>
+</li>
+<li><p>If ICMP sent UDP packets instead (as in Unix/Linux), would the IP protocol number still be 01 for the probe packets? If not, what would it be? </p>
+<p>如果在ICMP发生UDP数据报，IP协议号应该为0x11，十进制为17，表示交给UDP</p>
+</li>
+<li><p>Examine the ICMP echo packet in your screenshot. Is this different from the ICMP ping query packets in the first half of this lab? If yes, how so?</p>
+<p>tracert相关部分学习：Tracert（跟踪路由）是路由跟踪实用程序，用于确定 IP 数据报访问目标所采取的路径。Tracert 该诊断实用程序将包含不同生存时间 (TTL) 值的 Internet 控制消息协议(ICMP) 回显数据包发送到目标，以决定到达目标采用的路由。要在转发数据包上的 TTL 之前至少递减 1，必需路径上的每个路由器，所以 TTL 是有效的跃点计数。</p>
+<p>因此返回的都是Time-to-live（TTL）</p>
+<p><img src="/images/Wiresharkimages/1561794082120.png" alt="1561794082120"></p>
+<p><img src="/images/Wiresharkimages/1561792611885.png" alt="1561792611885"></p>
+<p>所以Type不一样，Code等于0是一样的，checksum是不会一样的，同时不存在ID和Seq了。</p>
+<p>而最后的ICMP响应数据包中非超时的ICMP的Type也为0是一样的，这里checksum和ID以及Seq可能会不一样，</p>
+<p><img src="/images/Wiresharkimages/1561792752045.png" alt="1561792752045"></p>
+</li>
+<li><p>Examine the ICMP error packet in your screenshot. It has more fields than the ICMP echo packet. What is included in those fields? </p>
+<p><img src="/images/Wiresharkimages/1561792907883.png" alt="1561792907883"></p>
+<p>多了ICMP请求数据包中的内容。<br>查询相关资料可得：当TTL值变成0时，不能够继续传送，路由器就回复了一个ICMP相应，这个数据包类型是11，代码是0，需要注意的是，在ICMP的结尾部分包含了原echo请求的IP头和ICMP数据的拷贝。因此这个数据包也被叫做ICMP双头包，表示包含有两个ICMP的包头信息。这样做的目的是在网络故障检修的时候会非常有用。</p>
+</li>
+<li><p>Examine the last three ICMP packets received by the source host. How are these packets different from the ICMP error packets? Why are they different? </p>
+<p><img src="/images/Wiresharkimages/1561794178032.png" alt="1561794178032"></p>
+<p>最后的三个ICMP相应数据包是目的主机发送给我的ICMP回应数据包，因为这是TTL已经足够大，可以到达最终服务器，因此不会被丢弃，返回正常的Type 0 Code 0 的reply的ICMP数据包。</p>
+<p>而超时的数据包会返回Type 11 Code 0 以及ICMP请求的部分</p>
+</li>
+<li><p>Within the tracert measuremenzu’houts, is there a link whose delay is significantly longer than others?  Refer to the screenshot in Figure 4, is there a link whose delay is significantly longer than others?  On the basis of the router<br>names, can you guess the location of the two routers on the end of this link?</p>
+<p><img src="/images/Wiresharkimages/1561793801039.png" alt="1561793801039"></p>
+<p>根据图中的截图可以发现第10个到11个节点的延迟突然增加，可能是过 太平洋电缆/光缆到法国那边</p>
+<p>经过查询IP地址可得</p>
+<p>第10个IP202.97.62.138为北京</p>
+<p><img src="/images/Wiresharkimages/1561793732084.png" alt="1561793732084"></p>
+<p>第11个IP202.97.122.106为英国伦敦</p>
+<p><img src="/images/Wiresharkimages/1561793759451.png" alt="1561793759451"></p>
+</li>
+</ol>
+<h1 id="ARP"><a href="#ARP" class="headerlink" title="ARP"></a>ARP</h1><h2 id="研究ARP协议的几个方面"><a href="#研究ARP协议的几个方面" class="headerlink" title="研究ARP协议的几个方面:"></a>研究ARP协议的几个方面:</h2><ul>
+<li>Capturing and analyzing Ethernet frames </li>
+</ul>
+<h2 id="实验步骤及结果-2"><a href="#实验步骤及结果-2" class="headerlink" title="实验步骤及结果"></a>实验步骤及结果</h2><h3 id="1-Capturing-and-analyzing-Ethernet-frames"><a href="#1-Capturing-and-analyzing-Ethernet-frames" class="headerlink" title="1.Capturing and analyzing Ethernet frames"></a>1.Capturing and analyzing Ethernet frames</h3><h4 id="步骤-9"><a href="#步骤-9" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>First, make sure your browser’s cache is empty. To do this under Mozilla Firefox V3, select Tools-&gt;Clear Recent History and check the box for Cache. For Internet Explorer, select Tools-&gt;Internet Options-&gt;Delete Files. Start up the Wireshark packet sniffer</li>
+<li>Enter the following URL into your browser <a href="http://gaia.cs.umass.edu/wireshark-labs/HTTP-ethereal-lab-file3.html" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/HTTP-ethereal-lab-file3.html</a> Your<br>browser should display the rather lengthy US Bill of Rights. </li>
+<li>Stop Wireshark packet capture. First, find the packet numbers (the leftmost column in the upper Wireshark window) of the HTTP GET message that was sent from your computer to gaia.cs.umass.edu, as well as the beginning of the HTTP response message sent to your computer by gaia.cs.umass.edu.  You should see a screen that looks something like this (where packet 4 in the screen shot below contains the HTTP GET message) </li>
+<li>•Since this lab is about Ethernet and ARP, we’re not interested in IP or higher-layer protocols. So let’s change Wireshark’s “listing of captured packets” window so that it shows information only about protocols below IP. To have Wireshark do this, select Analyze-&gt;Enabled Protocols. Then uncheck the IP box and select OK. You should now see an Wireshark window that looks like:</li>
+</ul>
+<h4 id="实验结果-8"><a href="#实验结果-8" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="/images/Wiresharkimages/1561802992043.png" alt="1561802992043"></p>
+<p>采用作者的抓包结果</p>
+<h4 id="问题回答-5"><a href="#问题回答-5" class="headerlink" title="问题回答"></a>问题回答</h4><ol>
+<li><p>What is the 48-bit Ethernet address of your computer? </p>
+<p><img src="/images/Wiresharkimages/1561803128363.png" alt="1561803128363"></p>
+<p>地址是00:d0:59:a9:3d:68</p>
+</li>
+<li><p>What is the 48-bit destination address in the Ethernet frame?  Is this the Ethernet address of gaia.cs.umass.edu? (Hint: the answer is <em>no</em>). What device has this as its Ethernet address? [Note: this is an important question, and one that students sometimes get wrong.  Re-read pages 468-469 in the text and make sure you understand the answer here.] </p>
+<p><img src="/images/Wiresharkimages/1561803179076.png" alt="1561803179076"></p>
+<p>地址为00:06:25:da:af:73</p>
+<p>不是gaia.cs.umass.edu的地址，因为这只是选择下一步转发的路由地址，不会是最终的地址</p>
+</li>
+<li><p>Give the hexadecimal value for the two-byte Frame type field.  What upper layer protocol does this correspond to? </p>
+<p>0x0800代表上层协议是IPv4</p>
+<p><img src="/images/Wiresharkimages/1561803209507.png" alt="1561803209507"></p>
+</li>
+<li><p>How many bytes from the very start of the Ethernet frame does the ASCII “G” in “GET” appear in the Ethernet frame? </p>
+<p><img src="/images/Wiresharkimages/1561803324435.png" alt="1561803324435"></p>
+<p>每两个十六进制字符代表一个字节（8比特），则有16+16+16+7=55个Bytes</p>
+</li>
+<li><p>What is the value of the Ethernet source address?  Is this the address of your computer, or of gaia.cs.umass.edu (Hint: the answer is <em>no</em>). What device has this as its Ethernet address? </p>
+<p><img src="/images/Wiresharkimages/1561803452880.png" alt="1561803452880"></p>
+<p>源地址为00:06:25:da:af:73</p>
+<p>拥有这个以太网地址的设备是离我电脑最近的路由器，而不是gaia.cs.umass.edu的地址。</p>
+</li>
+<li><p>What is the destination address in the Ethernet frame?  Is this the Ethernet address of your computer? </p>
+<p><img src="/images/Wiresharkimages/1561803538191.png" alt="1561803538191"></p>
+<p>目的地址是00:d0:59:a9:3d:68</p>
+<p>是我（作者）的以太网的地址</p>
+</li>
+<li><p>Give the hexadecimal value for the two-byte Frame type field. What upper layer protocol does this correspond to? </p>
+<p>同样是0x0800，是IPv4</p>
+</li>
+<li><p>How many bytes from the very start of the Ethernet frame does the ASCII “O” in “OK” (i.e., the HTTP response code) appear in the Ethernet frame? </p>
+<p><img src="/images/Wiresharkimages/1561803630605.png" alt="1561803630605"></p>
+<p>4*16+4 = 68Bytes</p>
+</li>
+</ol>
+<h3 id="2-The-Address-Resolution-Protocol"><a href="#2-The-Address-Resolution-Protocol" class="headerlink" title="2.The Address Resolution Protocol"></a>2.The Address Resolution Protocol</h3><h4 id="步骤-10"><a href="#步骤-10" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>MS-DOS. The arp command is in c:\windows\system32, so type either “arp” or “c:\windows\system32\arp” in the MS-DOS command line (without quotation marks). MS-DOS：arp命令位于 c:\windows\system32 中，因此在 MS-DOS命令行中 输入“arp”或“c:\windows\system32\arp”（没有引号）</li>
+</ul>
+<h4 id="问题解答"><a href="#问题解答" class="headerlink" title="问题解答"></a>问题解答</h4><ol start="9">
+<li><p>Write down the contents of your computer’s ARP cache.  What is the meaning of each column value?</p>
+<p><img src="/images/Wiresharkimages/1561804110624.png" alt="1561804110624"></p>
+<p>不同的接口代表不同的网卡，有不同的IP和MAC，类型分为动态和静态</p>
+</li>
+</ol>
+<h4 id="步骤-11"><a href="#步骤-11" class="headerlink" title="步骤"></a>步骤</h4><ul>
+<li>Clear your ARP cache, as described above. </li>
+<li>Next, make sure your browser’s cache is empty. To do this under Mozilla  Firefox V3, select <em>Tools-&gt;Clear Recent  History</em> and check the box for Cache. For Internet Explorer, select <em>Tools-&gt;Internet Options-&gt;Delete Files</em></li>
+<li>Start up the Wireshark packet sniffer</li>
+<li>Enter the following URL into your browser <a href="http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-lab-file3.html" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/HTTP-wireshark-lab-file3.html</a> Your browser should again display the rather lengthy US Bill of Rights.  </li>
+<li>Stop Wireshark packet capture. Again, we’re not interested in IP or higher-layer protocols, so change Wireshark’s “listing of captured packets” window so that it shows information only about protocols below IP. To have Wireshark do this, select <em>Analyze-&gt;Enabled Protocols.</em> Then uncheck the IP box and select <em>OK</em>. You should now see an Wireshark window that looks like: </li>
+</ul>
+<h4 id="问题解答-1"><a href="#问题解答-1" class="headerlink" title="问题解答"></a>问题解答</h4><ol start="10">
+<li><p>What are the hexadecimal values for the source and destination addresses in the Ethernet frame containing the ARP request message? </p>
+<p>由于我目前没有无限路由器（无法抓取ARP广播），直接分析作者抓包情况</p>
+<p><img src="/images/Wiresharkimages/1561804612933.png" alt="1561804612933"></p>
+<p>源地址：00:d0:59;a9:3d:68</p>
+<p>目的地址：ff:ff:ff:ff:ff:ff</p>
+</li>
+<li><p>Give the hexadecimal value for the two-byte Ethernet Frame type field.  What upper layer protocol does this<br>correspond to? </p>
+<p><img src="/images/Wiresharkimages/1561804691472.png" alt="1561804691472"></p>
+<p>0x0806为ARP</p>
+</li>
+<li><p>Download the ARP specification from <a href="ftp://ftp.rfc-editor.org/in-notes/std/std37.txt" target="_blank" rel="noopener">ftp://ftp.rfc-editor.org/in-notes/std/std37.txt</a>. A readable, detailed<br>discussion of ARP is also at <a href="http://www.erg.abdn.ac.uk/users/gorry/course/inet-pages/arp.html" target="_blank" rel="noopener">http://www.erg.abdn.ac.uk/users/gorry/course/inet-pages/arp.html</a>. </p>
+<p>a)How many bytes from the very beginning of the Ethernet frame does the ARP <em>opcode</em> field begin? </p>
+<p><img src="/images/Wiresharkimages/1561805055770.png" alt="1561805055770"></p>
+<p>维基百科中报文格式可知，操作码为第21个字节</p>
+<p>b)What is the value of the <em>opcode</em> field within the ARP-payload part of the Ethernet frame in which an ARP request is made? </p>
+<p><img src="/images/Wiresharkimages/1561805181019.png" alt="1561805181019"></p>
+<p>操作码为1</p>
+<p>查询资料可得：1为ARP请求，2为ARP应答，3为<a href="https://zh.wikipedia.org/wiki/逆地址解析协议" target="_blank" rel="noopener">RARP</a>请求，4为RARP应答。</p>
+<p>c)Does the ARP message contain the IP address of the sender? </p>
+<p><img src="/images/Wiresharkimages/1561805406219.png" alt="1561805406219"></p>
+<p>为192.168.1.1</p>
+<p>d)Where in the ARP request does the “question” appear – the Ethernet address of the machine whose corresponding IP address is being queried? </p>
+<p>同上题图，以太网地址全为0，请求是广播。</p>
+</li>
+<li><p>Now find the ARP reply that was sent in response to the ARP request.<br>a)How many bytes from the very beginning of the Ethernet frame does the ARP <em>opcode</em> field begin? </p>
+<p>同12a），结果也为Bytes</p>
+<p>b)What is the value of the <em>opcode</em> field within the ARP-payload part of the Ethernet frame in which an ARP response is made?</p>
+<p><img src="/images/Wiresharkimages/1561805678031.png" alt="1561805678031"></p>
+<p> <img src="/images/Wiresharkimages/1561805578382.png" alt="1561805578382"></p>
+<p>结果为2</p>
+<p>c)Where in the ARP message does the “answer” to the earlier ARP request appear – the IP address of the machine having the Ethernet address whose corresponding IP address is being queried? </p>
+<p><img src="/images/Wiresharkimages/1561805698416.png" alt="1561805698416"></p>
+<p>请求的答案中IP为192.168.1.1 MAC为00:06:25:da:af:73</p>
+</li>
+<li><p>What are the hexadecimal values for the source and destination addresses in the Ethernet frame containing the<br>ARP reply message? </p>
+<p><img src="/images/Wiresharkimages/1561805781992.png" alt="1561805781992"></p>
+<p>源地址为00:06:25:da:af:73 ， 目的为00:d0:59:a9:3d:68</p>
+</li>
+<li><p>Open the <em>ethernet-ethereal-trace-1</em> trace file in <a href="http://gaia.cs.umass.edu/wireshark-labs/wireshark-traces.zip" target="_blank" rel="noopener">http://gaia.cs.umass.edu/wireshark-labs/wireshark-traces.zip</a>. The first and second ARP packets in this trace correspond to an ARP request sent by the computer running Wireshark, and the ARP reply sent to the computer running Wireshark by the computer with the ARP-requested Ethernet address.  But there is yet another computer on this network, as indicated by packet 6 – another ARP request.  Why is there no ARP reply (sent in response to the ARP request in packet 6) in the packet trace? </p>
+<p>虽然ARP是广播的，但是回复结果不是广播的，仅仅是正确寻找的IP地址才会返回应答，因此一台可以抓到ARP请求，答复将发送给直接发出请求的计算机</p>
+</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/08/什么是Node-js/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -751,7 +1414,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -764,7 +1427,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
